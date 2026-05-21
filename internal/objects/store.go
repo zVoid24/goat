@@ -10,6 +10,35 @@ import (
 	"path/filepath"
 )
 
+func StoreObject(object string) (string, error) {
+	var buf bytes.Buffer
+	comprsr := zlib.NewWriter(&buf)
+	fileObject := []byte(object)
+	_, err := comprsr.Write(
+		fileObject,
+	)
+	comprsr.Close()
+	if err != nil {
+		return "", err
+	}
+	h := sha1.New()
+	if _, err := h.Write(fileObject); err != nil {
+		return "", err
+	}
+	hash := fmt.Sprintf("%x", h.Sum(nil))
+	objDir := hash[:2]
+	objFile := hash[2:]
+	err = os.MkdirAll(filepath.Join(".goat/objects", objDir), 0755)
+	if err != nil {
+		return "", err
+	}
+	err = os.WriteFile(filepath.Join(".goat/objects", objDir, objFile), buf.Bytes(), 0644)
+	if err != nil {
+		return "", err
+	}
+	return hash, nil
+}
+
 func Store(fileName string) (string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -28,8 +57,8 @@ func Store(fileName string) (string, error) {
 		fileObject,
 	)
 	comprsr.Close()
-	fmt.Println(buf)
-	fmt.Printf("%q\n", fileObject)
+	// fmt.Println(buf)
+	// fmt.Printf("%q\n", fileObject)
 
 	h := sha1.New()
 	if _, err := h.Write(fileObject); err != nil {

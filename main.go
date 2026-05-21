@@ -50,6 +50,13 @@ func main() {
 		}
 		fmt.Println(content)
 		return
+	} else if os.Args[1] == "tree" {
+		hash, err := objects.WalkTree(os.Args[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(hash)
+		return
 	}
 	hash, err := objects.Store(os.Args[1])
 	if err != nil {
